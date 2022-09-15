@@ -6,16 +6,17 @@ const Filter = props => {
   };
 
   return (
-    <>
-      <label htmlFor='search'>search: </label>
+    <div className='form-group'>
+      <label htmlFor='search'>Search</label>
       <input
+        className='form-control'
         type='text'
         name='search'
         id='search'
         value={props.value}
         onChange={searchInputHandler}
       />
-    </>
+    </div>
   );
 };
 

@@ -2,13 +2,13 @@ import React from 'react';
 
 const Persons = ({contacts}) => {
   return (
-    <>
+    <ul className="list-group">
       {contacts.map(contact => (
-        <p key={contact.name}>
+        <li className="list-group-item" key={contact.name}>
           {contact.name} | {contact.number}
-        </p>
+        </li>
       ))}
-    </>
+    </ul>
   );
 };
 

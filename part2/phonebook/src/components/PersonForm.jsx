@@ -1,33 +1,32 @@
-import React from 'react';
+import React from "react";
 
 const PersonForm = props => {
-  const addNewNameHandler = (e) => {
-    e.preventDefault();
-    props.onFormSubmit();
-  };
-
-  const nameInputHandler = e => {
-    props.onNameValueChange(e.target.value);
-  };
-
-  const numberInputHandler = e => {
-    props.onNumberValueChange(e.target.value);
-  };
-
   return (
-    <>
-      <form onSubmit={addNewNameHandler}>
-        <div>
-          name: <input value={props.nameValue} onChange={nameInputHandler} />
+    <div className='row'>
+      <form onSubmit={props.onFormSubmit}>
+        <div className='form-group'>
+          Name
+          <input
+            className='form-control'
+            value={props.nameValue}
+            onChange={props.onNameValueChange}
+          />
         </div>
-        <div>
-          number: <input value={props.numberValue} onChange={numberInputHandler} />
+        <div className='form-group'>
+          Number
+          <input
+            className='form-control'
+            value={props.numberValue}
+            onChange={props.onNumberValueChange}
+          />
         </div>
-        <div>
-          <button type='submit'>add</button>
+        <div className="mt-2">
+          <button type='submit' className='btn btn-primary'>
+            Add Contact
+          </button>
         </div>
       </form>
-    </>
+    </div>
   );
 };
 

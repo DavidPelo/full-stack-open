@@ -1,20 +1,27 @@
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import Filter from './components/Filter';
 import PersonForm from './components/PersonForm';
 import Persons from './components/Persons';
+import axios from 'axios';
 
 const App = () => {
-  const [persons, setPersons] = useState ([
-    {name: 'Arto Hellas', number: '040-123456', id: 1},
-    {name: 'Ada Lovelace', number: '39-44-5323523', id: 2},
-    {name: 'Dan Abramov', number: '12-43-234345', id: 3},
-    {name: 'Mary Poppendieck', number: '39-23-6423122', id: 4},
-  ]);
+  const [persons, setPersons] = useState ([]);
   const [newName, setNewName] = useState ('');
   const [newNumber, setNewNumber] = useState ('');
   const [searchValue, setSearchValue] = useState ('');
 
-  const addNewName = () => {
+  const fetchPersons = async () => {
+    const response = await axios.get('http://localhost:3001/persons');
+    setPersons(response.data);
+  }
+
+  useEffect(() => {
+    fetchPersons()
+  }, [])
+  
+  const addNewName = e => {
+    e.preventDefault ();
+
     if (persons.some (person => person.name === newName)) {
       alert (`${newName} is already added to the phonebook`);
       return;
@@ -25,39 +32,42 @@ const App = () => {
     setNewNumber ('');
   };
 
-  const handleNameInput = nameInput => {
-    setNewName (nameInput);
+  const handleNameInput = e => {
+    setNewName (e.target.value);
   };
 
-  const handleNumberInput = numberInput => {
-    setNewNumber (numberInput);
+  const handleNumberInput = e => {
+    setNewNumber (e.target.value);
   };
 
   const handleSearchInput = value => {
     setSearchValue (value);
   };
 
-  const filterContactList = () => {
-    return persons
-      .filter (person =>
+  const contacts = searchValue
+    ? persons.filter (person =>
         person.name.toLowerCase ().includes (searchValue.toLowerCase ())
       )
-  };
+    : persons;
 
   return (
-    <div>
-      <h2>Phonebook</h2>
-      <Filter onSearchValueChange={handleSearchInput} value={searchValue} />
-      <h2>Add a New Contact</h2>
-      <PersonForm
-        onFormSubmit={addNewName}
-        onNameValueChange={handleNameInput}
-        onNumberValueChange={handleNumberInput}
-        nameValue={newName}
-        numberValue={newNumber}
-      />
-      <h2>Numbers</h2>
-      <Persons contacts={filterContactList()}/>
+    <div className="container">
+      <div className="row mt-5">
+        <div className="col-xs-12 col-sm-10 col-md-8 offset-sm-1 offset-md-2">
+          <h2>Phonebook</h2>
+          <Filter onSearchValueChange={handleSearchInput} value={searchValue} />
+          <h2 className="mt-2">Add a New Contact</h2>
+          <PersonForm
+            onFormSubmit={addNewName}
+            onNameValueChange={handleNameInput}
+            onNumberValueChange={handleNumberInput}
+            nameValue={newName}
+            numberValue={newNumber}
+          />
+          <h2 className="mt-2">Numbers</h2>
+          <Persons contacts={contacts} />
+        </div>
+      </div>
     </div>
   );
 };
