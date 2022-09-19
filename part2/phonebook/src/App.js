@@ -2,7 +2,7 @@ import {useState, useEffect} from 'react';
 import Filter from './components/Filter';
 import PersonForm from './components/PersonForm';
 import Persons from './components/Persons';
-import axios from 'axios';
+import contactsService from './services/contacts';
 
 const App = () => {
   const [persons, setPersons] = useState ([]);
@@ -11,25 +11,60 @@ const App = () => {
   const [searchValue, setSearchValue] = useState ('');
 
   const fetchPersons = async () => {
-    const response = await axios.get('http://localhost:3001/persons');
-    setPersons(response.data);
-  }
+    const contacts = await contactsService.getAll ();
+    setPersons (contacts);
+  };
 
-  useEffect(() => {
-    fetchPersons()
-  }, [])
-  
+  useEffect (() => {
+    fetchPersons ();
+  }, []);
+
   const addNewName = e => {
     e.preventDefault ();
 
-    if (persons.some (person => person.name === newName)) {
-      alert (`${newName} is already added to the phonebook`);
+    if (
+      persons.some (
+        person => person.name.toLowerCase () === newName.toLowerCase ()
+      )
+    ) {
+      const personToUpdate = persons.find (
+        person => person.name.toLowerCase () === newName.toLowerCase ()
+      );
+
+      if (
+        window.confirm (
+          `${personToUpdate.name} is already added to phonebook, replace the old number with a new one?`
+        )
+      ) {
+        updateExistingContact (personToUpdate);
+      }
       return;
     }
 
-    setPersons ([...persons, {name: newName, number: newNumber}]);
-    setNewName ('');
-    setNewNumber ('');
+    const newContact = {name: newName, number: newNumber};
+    contactsService.create (newContact).then (createdContact => {
+      setPersons ([...persons, createdContact]);
+      setNewName ('');
+      setNewNumber ('');
+    });
+  };
+
+  const updateExistingContact = contactToUpdate => {
+    const updatedContact = {...contactToUpdate, number: newNumber};
+
+    console.log (updatedContact);
+    contactsService
+      .update (contactToUpdate.id, updatedContact)
+      .then (changedContact => {
+        setPersons (
+          persons.map (
+            person =>
+              person.id !== changedContact.id ? person : changedContact
+          )
+        );
+        setNewName ('');
+        setNewNumber ('');
+      });
   };
 
   const handleNameInput = e => {
@@ -42,6 +77,18 @@ const App = () => {
 
   const handleSearchInput = value => {
     setSearchValue (value);
+  };
+
+  const deleteHandler = id => {
+    contactsService
+      .deleteContact (id)
+      .then (deletedContact => {
+        setPersons (persons.filter (person => person.id !== id));
+      })
+      .catch (error => {
+        alert (`This contact was already deleted from server`);
+        setPersons (persons.filter (person => person.id !== id));
+      });
   };
 
   const contacts = searchValue
@@ -65,7 +112,7 @@ const App = () => {
             numberValue={newNumber}
           />
           <h2 className="mt-2">Numbers</h2>
-          <Persons contacts={contacts} />
+          <Persons contacts={contacts} onDeleteUser={deleteHandler} />
         </div>
       </div>
     </div>

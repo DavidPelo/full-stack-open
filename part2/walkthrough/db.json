@@ -21,8 +21,14 @@
     {
       "content": "jlkjklj",
       "date": "2022-09-13T16:41:23.884Z",
-      "important": false,
+      "important": true,
       "id": 4
+    },
+    {
+      "content": "david",
+      "date": "2022-09-19T20:18:16.213Z",
+      "important": true,
+      "id": 5
     }
   ]
 }
