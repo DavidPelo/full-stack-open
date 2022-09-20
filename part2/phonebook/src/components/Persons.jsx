@@ -11,7 +11,7 @@ const Persons = ({ contacts, onDeleteUser }) => {
         <li className='list-group-item' key={contact.id}>
           {contact.name} | {contact.number}
           <button
-            className='btn btn-danger btn-sm'
+            className='btn btn-danger btn-sm float-end'
             onClick={() => deleteUser(contact.name, contact.id)}
           >
             delete

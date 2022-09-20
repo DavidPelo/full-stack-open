@@ -2,6 +2,8 @@ import {useState, useEffect} from 'react';
 import Filter from './components/Filter';
 import PersonForm from './components/PersonForm';
 import Persons from './components/Persons';
+import Notification from './components/Notification';
+
 import contactsService from './services/contacts';
 
 const App = () => {
@@ -9,6 +11,7 @@ const App = () => {
   const [newName, setNewName] = useState ('');
   const [newNumber, setNewNumber] = useState ('');
   const [searchValue, setSearchValue] = useState ('');
+  const [notification, setNotification] = useState (null);
 
   const fetchPersons = async () => {
     const contacts = await contactsService.getAll ();
@@ -43,6 +46,10 @@ const App = () => {
 
     const newContact = {name: newName, number: newNumber};
     contactsService.create (newContact).then (createdContact => {
+      createNotification (
+        `Contact added for ${createdContact.name}`,
+        'success'
+      );
       setPersons ([...persons, createdContact]);
       setNewName ('');
       setNewNumber ('');
@@ -62,9 +69,56 @@ const App = () => {
               person.id !== changedContact.id ? person : changedContact
           )
         );
+
+        createNotification (
+          `Number updated for ${changedContact.name}`,
+          'success'
+        );
+        setNewName ('');
+        setNewNumber ('');
+      })
+      .catch (error => {
+        console.log (error);
+        createNotification (
+          'Contact has already been deleted from the server',
+          'danger'
+        );
+        setPersons (
+          persons.filter (person => person.id !== contactToUpdate.id)
+        );
         setNewName ('');
         setNewNumber ('');
       });
+  };
+
+  const deleteHandler = id => {
+    contactsService
+      .deleteContact (id)
+      .then (deletedContact => {
+        createNotification (
+          `Contact deleted for ${persons.find (person => person.id === id).name}`,
+          'success'
+        );
+        setPersons (persons.filter (person => person.id !== id));
+      })
+      .catch (error => {
+        console.log (error);
+        createNotification (
+          'Contact has already been deleted from the server',
+          'danger'
+        );
+        setPersons (persons.filter (person => person.id !== id));
+      });
+  };
+
+  const createNotification = (message, type) => {
+    setNotification ({
+      message: message,
+      type: type,
+    });
+    setTimeout (() => {
+      setNotification (null);
+    }, 3000);
   };
 
   const handleNameInput = e => {
@@ -77,18 +131,6 @@ const App = () => {
 
   const handleSearchInput = value => {
     setSearchValue (value);
-  };
-
-  const deleteHandler = id => {
-    contactsService
-      .deleteContact (id)
-      .then (deletedContact => {
-        setPersons (persons.filter (person => person.id !== id));
-      })
-      .catch (error => {
-        alert (`This contact was already deleted from server`);
-        setPersons (persons.filter (person => person.id !== id));
-      });
   };
 
   const contacts = searchValue
@@ -111,6 +153,7 @@ const App = () => {
             nameValue={newName}
             numberValue={newNumber}
           />
+          {notification && <Notification notification={notification} />}
           <h2 className="mt-2">Numbers</h2>
           <Persons contacts={contacts} onDeleteUser={deleteHandler} />
         </div>
