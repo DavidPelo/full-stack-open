@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import Note from './components/Note';
-import Notification from './components/Notification'
+import Notification from './components/Notification';
 import Footer from './components/Footer';
 import noteService from './services/notes';
 
@@ -8,7 +8,7 @@ const App = () => {
   const [notes, setNotes] = useState ([]);
   const [newNote, setNewNote] = useState ('');
   const [showAll, setShowAll] = useState (true);
-  const [errorMessage, setErrorMessage] = useState ('some error happened...');
+  const [errorMessage, setErrorMessage] = useState (null);
 
   const getNotes = async () => {
     const initialNotes = await noteService.getAll ();
@@ -50,12 +50,12 @@ const App = () => {
         setNotes (notes.map (n => (n.id !== id ? n : updatedNote)));
       })
       .catch (error => {
-        setErrorMessage(
+        setErrorMessage (
           `Note '${note.content}' was already removed from server`
-        )
-        setTimeout(() => {
-          setErrorMessage(null)
-        }, 5000)
+        );
+        setTimeout (() => {
+          setErrorMessage (null);
+        }, 5000);
         setNotes (notes.filter (n => n.id !== id));
       });
   };
