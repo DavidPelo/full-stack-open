@@ -10,7 +10,8 @@
     "build:ui": "rm -rf build && cd ../../part2/walkthrough && npm run build && cp -r build ../../part3/backend-walkthrough",
     "deploy": "flyctl deploy",
     "deploy:full": "npm run build:ui && npm run deploy",
-    "logs:prod": "flyctl logs"
+    "logs:prod": "flyctl logs",
+    "lint": "eslint ."
   },
   "author": "David Pelo",
   "license": "MIT",
@@ -21,6 +22,7 @@
     "mongoose": "^6.6.4"
   },
   "devDependencies": {
+    "eslint": "^8.29.0",
     "nodemon": "^2.0.20"
   }
 }
