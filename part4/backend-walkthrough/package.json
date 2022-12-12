@@ -6,12 +6,12 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build:ui": "rm -rf build && cd ../../part2/walkthrough && npm run build && cp -r build ../../part4/backend-walkthrough",
     "deploy": "flyctl deploy",
     "deploy:full": "npm run build:ui && npm run deploy",
     "logs:prod": "flyctl logs",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "jest --verbose"
   },
   "author": "David Pelo",
   "license": "MIT",
@@ -23,6 +23,10 @@
   },
   "devDependencies": {
     "eslint": "^8.29.0",
+    "jest": "^29.3.1",
     "nodemon": "^2.0.20"
+  },
+  "jest": {
+    "testEnvironment": "node"
   }
 }
