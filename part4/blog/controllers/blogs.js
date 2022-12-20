@@ -1,7 +1,7 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
-const helper = require('../tests/api_helper')
+const jwt = require('jsonwebtoken')
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({}).populate('user', {
@@ -24,8 +24,7 @@ blogsRouter.get('/:id', async (request, response) => {
 blogsRouter.post('/', async (request, response, next) => {
   const body = request.body
 
-  const users = await User.find({})
-  const user = users[0]
+  const user = request.user
 
   const blog = new Blog({
     title: body.title,
@@ -64,6 +63,17 @@ blogsRouter.put('/:id', async (request, response, next) => {
 })
 
 blogsRouter.delete('/:id', async (request, response) => {
+  const user = request.user
+  const blog = await Blog.findById(request.params.id)
+
+  if(!blog) response.status(204).end()
+
+  if (blog && user._id.toString() !== blog.user.toString()) {
+    return response
+      .status(401)
+      .json({ error: 'you are not allowed to do that' })
+  }
+
   await Blog.findByIdAndRemove(request.params.id)
   response.status(204).end()
 })
