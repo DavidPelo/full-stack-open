@@ -24,18 +24,8 @@ const tokenExtractor = (request, response, next) => {
 }
 
 const userExtractor = async (request, response, next) => {
-  if (!request.token) {
-    return response.status(401).json({ error: 'token missing' })
-  }
-
   const decodedToken = jwt.verify(request.token, process.env.SECRET)
-
-  if (!decodedToken.id) {
-    return response.status(401).json({ error: 'token invalid' })
-  }
-
   request.user = await User.findById(decodedToken.id)
-
   next()
 }
 
@@ -47,9 +37,16 @@ const errorHandler = (error, request, response, next) => {
   } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
   } else if (error.name === 'JsonWebTokenError') {
-    return response.status(401).json({
-      error: 'token invalid',
-    })
+    if (error.message === 'jwt must be provided') {
+      return response.status(401).json({
+        error: 'token missing',
+      })
+    }
+    if (error.message === 'invalid token') {
+      return response.status(401).json({
+        error: 'token invalid',
+      })
+    }
   } else if (error.name === 'TokenExpiredError') {
     return response.status(401).json({
       error: 'token expired',
