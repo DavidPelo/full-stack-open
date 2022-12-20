@@ -12,7 +12,6 @@ const data = require('./testData')
 
 beforeEach(async () => {
   await Blog.deleteMany({})
-
   await Blog.insertMany(data.blogs)
 })
 
@@ -80,6 +79,9 @@ describe('blog objects are formed correctly', () => {
 
 describe('adding a new blog', () => {
   test('blogs can be posted to the api in the correct format', async () => {
+    const user = await helper.createUser()
+    const token = await helper.createToken(user)
+
     const newBlog = {
       title: 'Test Blog',
       author: 'David Pelo',
@@ -89,6 +91,7 @@ describe('adding a new blog', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -100,32 +103,61 @@ describe('adding a new blog', () => {
     expect(titles).toContain('Test Blog')
   })
 
-  test('server responds 400 bad request if title or url properties are missing', async () => {
-    const malformedBlogObject = [
-      {
-        author: 'David Pelo',
-        url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
-        likes: 1337,
-      },
-      {
-        title: 'Test Blog',
-        author: 'David Pelo',
-        likes: 1337,
-      },
-      {
-        author: 'David Pelo',
-        likes: 1337,
-      },
-    ]
+  test('server responds 401 unauthorized if a blog is posted without a token', async () => {
+    const newBlog = {
+      title: 'Test Blog',
+      author: 'David Pelo',
+      url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
+      likes: 1337,
+    }
 
-    malformedBlogObject.forEach(async blog => {
-      await api.post('/api/blogs').send(blog).expect(400)
-    })
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(401)
+      .expect('Content-Type', /application\/json/)
+  })
+
+  test('server responds 400 bad request if title property is missing', async () => {
+    const user = await helper.createUser()
+    const token = await helper.createToken(user)
+
+    const malformedBlog = {
+      url: 'test url',
+      author: 'David Pelo',
+      likes: 1337,
+    }
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
+      .send(malformedBlog)
+      .expect(400)
+  })
+
+  test('server responds 400 bad request if url property is missing', async () => {
+    const user = await helper.createUser()
+    const token = await helper.createToken(user)
+
+    const malformedBlog = {
+      title: 'Test Blog',
+      author: 'David Pelo',
+      likes: 1337,
+    }
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
+      .send(malformedBlog)
+      .expect(400)
   })
 })
 
 describe('adding a new blog with no likes property', () => {
   test('"likes" property should default to 0', async () => {
+    const user = await helper.createUser()
+    const token = await helper.createToken(user)
+
     const newBlogWithMissingLikes = {
       title: 'Likes Default Test',
       author: 'David Pelo',
@@ -134,6 +166,7 @@ describe('adding a new blog with no likes property', () => {
 
     const response = await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
       .send(newBlogWithMissingLikes)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -144,13 +177,32 @@ describe('adding a new blog with no likes property', () => {
 
 describe('deleting a blog', () => {
   test('succeeds with status code 204 if id is valid', async () => {
-    const blogsAtStart = await helper.blogsInDb()
-    const blogToDelete = blogsAtStart[0]
+    const user = await helper.createUser()
+    const token = await helper.createToken(user)
 
-    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+    const newBlog = {
+      title: 'test blog delete',
+      author: 'David Pelo',
+      url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
+      likes: 1337,
+    }
+
+    const blogToDelete = await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const blogsAtStart = await helper.blogsInDb()
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.body.id}`)
+      .set('Authorization', `bearer ${token}`)
+      .expect(204)
 
     const blogsAtEnd = await helper.blogsInDb()
-    expect(blogsAtEnd).toHaveLength(data.blogs.length - 1)
+    expect(blogsAtEnd).toHaveLength(blogsAtStart.length - 1)
 
     const titles = blogsAtEnd.map(r => r.title)
     expect(titles).not.toContain(blogToDelete.title)
