@@ -80,7 +80,7 @@ const App = () => {
       const newBlog = await blogService.create(blogObject)
 
       console.log(newBlog)
-      
+
       setBlogs(blogs.concat(newBlog))
       showNotification(`Added ${newBlog.title} by ${newBlog.author}`, 'success')
     } catch (exception) {
@@ -104,7 +104,7 @@ const App = () => {
   const removeBlog = async id => {
     try {
       await blogService.deleteBlog(id)
-      showNotification(`Blog removed successfully`, 'success')
+      showNotification('Blog removed successfully', 'success')
       setBlogs(blogs.filter(blog => blog.id !== id))
     } catch (error) {
       console.log(error)
