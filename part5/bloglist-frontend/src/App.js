@@ -17,8 +17,13 @@ const App = () => {
   const useBlogRef = useRef()
 
   useEffect(() => {
-    blogService.getAll().then(blogs => setBlogs(blogs))
+    fetchBlogs()
   }, [])
+
+  const fetchBlogs = async () => {
+    const blogs = await blogService.getAll()
+    setBlogs(blogs)
+  }
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedNoteappUser')
@@ -68,53 +73,44 @@ const App = () => {
     showNotification('Logout successful', 'success')
   }
 
-  const addBlog = blogObject => {
+  const addBlog = async blogObject => {
     useBlogRef.current.toggleVisibility()
 
-    blogService
-      .create(blogObject)
-      .then(newBlog => {
-        setBlogs(blogs.concat(newBlog))
-        showNotification(
-          `Added ${newBlog.title} by ${newBlog.author}`,
-          'success'
-        )
-      })
-      .catch(exception => {
-        showNotification(`${exception.response.data.error}`, 'error')
-      })
+    try {
+      const newBlog = await blogService.create(blogObject)
+
+      console.log(newBlog)
+      
+      setBlogs(blogs.concat(newBlog))
+      showNotification(`Added ${newBlog.title} by ${newBlog.author}`, 'success')
+    } catch (exception) {
+      showNotification(`${exception.response.data.error}`, 'error')
+    }
   }
 
-  const addLike = blogObject => {
+  const addLike = async blogObject => {
     const id = blogObject.id
 
     blogObject.likes += 1
 
-    blogService
-      .update(id, blogObject)
-      .then(updatedBlog => {
-        setBlogs(blogs.map(b => (b.id !== id ? b : updatedBlog)))
-      })
-      .catch(exception => {
-        showNotification(`${exception.response.data.error}`, 'error')
-      })
+    try {
+      const updatedBlog = await blogService.update(id, blogObject)
+      setBlogs(blogs.map(b => (b.id !== id ? b : updatedBlog)))
+    } catch (exception) {
+      showNotification(`${exception.response.data.error}`, 'error')
+    }
   }
 
-  const removeBlog = id => {
-    blogService
-      .deleteBlog(id)
-      .then(deletedBlog => {
-        showNotification(`Blog removed successfully`, 'success')
-        setBlogs(blogs.filter(blog => blog.id !== id))
-      })
-      .catch(error => {
-        console.log(error)
-        showNotification(
-          'Blog has already been deleted from the server',
-          'error'
-        )
-        setBlogs(blogs.filter(blog => blog.id !== id))
-      })
+  const removeBlog = async id => {
+    try {
+      await blogService.deleteBlog(id)
+      showNotification(`Blog removed successfully`, 'success')
+      setBlogs(blogs.filter(blog => blog.id !== id))
+    } catch (error) {
+      console.log(error)
+      showNotification('Blog has already been deleted from the server', 'error')
+      setBlogs(blogs.filter(blog => blog.id !== id))
+    }
   }
 
   const loginForm = () => (

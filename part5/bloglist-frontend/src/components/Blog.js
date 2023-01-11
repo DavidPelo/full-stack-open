@@ -21,6 +21,8 @@ const Blog = ({ blog, addLike, user, removeBlog }) => {
     }
   }
 
+  const showRemoveButton = user && (user.id === blog.user.id || user.id === blog.user)
+
   return (
     <div style={blogStyle}>
       {blog.title} {blog.author}
@@ -38,7 +40,7 @@ const Blog = ({ blog, addLike, user, removeBlog }) => {
               </button>
             )}
           </p>
-          {(user && user.id === blog.user.id) && (
+          {showRemoveButton && (
             <button type='button' onClick={removeHandler}>
               remove
             </button>
