@@ -26,18 +26,18 @@ const Blog = ({ blog, user, addLike, removeBlog }) => {
     user && (user.id === blog.user.id || user.id === blog.user)
 
   return (
-    <div style={blogStyle}>
+    <div style={blogStyle} className='blog'>
       {blog.title} {blog.author}
-      <button type='button' onClick={() => setShowDetails(!showDetails)}>
+      <button type='button' className='detailsButton' onClick={() => setShowDetails(!showDetails)}>
         {showDetails ? 'hide' : 'view'}
       </button>
       {showDetails && (
-        <>
-          <p>{blog.url}</p>
-          <p>
-            likes {blog.likes}{' '}
+        <div className='.blogDetails'>
+          <p className="blogUrl">{blog.url}</p>
+          <p className="blogLikes">
+            likes {blog.likes}
             {user && (
-              <button type='button' onClick={likeHandler}>
+              <button type='button' className='likeButton' onClick={likeHandler}>
                 like
               </button>
             )}
@@ -47,7 +47,7 @@ const Blog = ({ blog, user, addLike, removeBlog }) => {
               remove
             </button>
           )}
-        </>
+        </div>
       )}
     </div>
   )
