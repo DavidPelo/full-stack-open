@@ -26,7 +26,7 @@ const App = () => {
   }
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedNoteappUser')
+    const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       console.log(user)
@@ -54,7 +54,7 @@ const App = () => {
         password,
       })
 
-      window.localStorage.setItem('loggedNoteappUser', JSON.stringify(user))
+      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
       blogService.setToken(user.token)
 
       setUser(user)
@@ -69,7 +69,7 @@ const App = () => {
 
   const handleLogout = () => {
     setUser(null)
-    window.localStorage.removeItem('loggedNoteappUser')
+    window.localStorage.removeItem('loggedBlogappUser')
     showNotification('Logout successful', 'success')
   }
 
@@ -114,10 +114,11 @@ const App = () => {
   }
 
   const loginForm = () => (
-    <form onSubmit={handleLogin}>
+    <form onSubmit={handleLogin} id='login-form'>
       <div>
         username
         <input
+          id='username'
           type='text'
           value={username}
           name='Username'
@@ -127,13 +128,16 @@ const App = () => {
       <div>
         password
         <input
+          id='password'
           type='password'
           value={password}
           name='Password'
           onChange={({ target }) => setPassword(target.value)}
         />
       </div>
-      <button type='submit'>login</button>
+      <button type='submit' id='login-button'>
+        login
+      </button>
     </form>
   )
 
@@ -159,18 +163,19 @@ const App = () => {
       ) : (
         loginForm()
       )}
-
-      {blogs
-        .sort((blogA, blogZ) => blogZ.likes - blogA.likes)
-        .map(blog => (
-          <Blog
-            key={blog.id}
-            blog={blog}
-            addLike={addLike}
-            user={user}
-            removeBlog={removeBlog}
-          />
-        ))}
+      <div id='blog-list'>
+        {blogs
+          .sort((blogA, blogZ) => blogZ.likes - blogA.likes)
+          .map(blog => (
+            <Blog
+              key={blog.id}
+              blog={blog}
+              addLike={addLike}
+              user={user}
+              removeBlog={removeBlog}
+            />
+          ))}
+      </div>
     </div>
   )
 }
